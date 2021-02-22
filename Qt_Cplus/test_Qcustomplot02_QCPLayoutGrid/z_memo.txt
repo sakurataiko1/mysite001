@@ -1,5 +1,0 @@
-導入編 :QCustomPlot:Qt
-http://qt-gui.blogspot.com/2014/01/qcustomplot.html
-
-QCustomPlotで凡例をグラフの外に表示
-参考：http://kohshi.blogspot.com/2013/12/qcustomplot_18.html
