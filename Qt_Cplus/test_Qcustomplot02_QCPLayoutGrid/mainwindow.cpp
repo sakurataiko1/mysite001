@@ -39,15 +39,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     //凡例をグラフの外に表示
     QCPLayoutGrid *subLayout = new QCPLayoutGrid;  // グラフの右に挿入されるQCPLayoutGrid(subLayout)
-    //ui.histogram->plotLayout()->addElement(0, 1, subLayout); // (Row, Column) = (0,1)にsubLayoutを追加
     customPlot->plotLayout()->addElement(0, 1, subLayout); // (Row, Column) = (0,1)にsubLayoutを追加
-      subLayout->addElement(0, 0, new QCPLayoutElement); // subLayoutの(Row, Column) = (0,0)にPadding用QCPLayoutElementを
-    //subLayout->addElement(1, 0, ui.histogram->legend); // (Row, Column) = (1,0)に凡例（Legend）を追加
-      subLayout->addElement(1, 0, customPlot->legend); // (Row, Column) = (1,0)に凡例（Legend）を追加
-      subLayout->addElement(2, 0, new QCPLayoutElement); // 同Paddingを追加
-      subLayout->setColumnStretchFactor(0, 0.01);        // subLayoutの横幅はなるべく小さくする
-      subLayout->setRowStretchFactor(1, 0.01);           // subLayoutの凡例がはいるRow=1はなるべく小さくする
-    //ui.histogram->plotLayout()->setColumnStretchFactor(1, 0.01);
+    subLayout->addElement(0, 0, new QCPLayoutElement); // subLayoutの(Row, Column) = (0,0)にPadding用QCPLayoutElementを
+    subLayout->addElement(1, 0, customPlot->legend); // (Row, Column) = (1,0)に凡例（Legend）を追加
+    subLayout->addElement(2, 0, new QCPLayoutElement); // 同Paddingを追加
+    subLayout->setColumnStretchFactor(0, 0.01);        // subLayoutの横幅はなるべく小さくする
+    subLayout->setRowStretchFactor(1, 0.01);           // subLayoutの凡例がはいるRow=1はなるべく小さくする
     customPlot->plotLayout()->setColumnStretchFactor(1, 0.01);
 
     customPlot->replot();
