@@ -26,5 +26,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    void func_makeGraph01( QVector<double> input_x, QVector<double> input_y);
 };
 #endif // MAINWINDOW_H

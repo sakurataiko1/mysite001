@@ -62,8 +62,24 @@ void MainWindow::on_pushButton_graph01_clicked()
 
 }
 
-
 void MainWindow::on_pushButton_graph02_clicked()
+{
+    QVector<double> x1(5) , y1(5);
+        x1[0] = -45;
+        y1[0] = -43;
+        x1[1] = 46;
+        y1[1] = 42;
+        x1[2] = -25;
+        y1[2] = -24;
+        x1[3] = -12;
+        y1[3] = 10;
+        x1[4] = 25;
+        y1[4] = 26;
+
+    func_makeGraph01(x1 , y1);
+}
+
+void MainWindow::func_makeGraph01( QVector<double> input_x, QVector<double> input_y)
 {
     //QCustomPlot *customPlot = ui->customPlot;
     QCPCurve *verticalLine;
@@ -83,16 +99,18 @@ void MainWindow::on_pushButton_graph02_clicked()
 
       // creating of the graphics vector
       QVector<double> x1(5) , y1(5);
-          x1[0] = -45;
-          y1[0] = -43;
-          x1[1] = 46;
-          y1[1] = 42;
-          x1[2] = -25;
-          y1[2] = -24;
-          x1[3] = -12;
-          y1[3] = 10;
-          x1[4] = 25;
-          y1[4] = 26;
+      x1 = input_x;
+      y1 = input_y;
+      //x1[0] = -45;
+      //y1[0] = -43;
+      //x1[1] = 46;
+      //y1[1] = 42;
+      //x1[2] = -25;
+      //y1[2] = -24;
+      //x1[3] = -12;
+      //y1[3] = 10;
+      //x1[4] = 25;
+      //y1[4] = 26;
 
       wGraphic->addGraph(wGraphic->xAxis, wGraphic->yAxis);
       wGraphic->graph(0)->setData(x1,y1);     // Set the coordinates of the points chart
