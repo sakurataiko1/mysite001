@@ -20,6 +20,8 @@ MainWindow::~MainWindow()
 }
 
 
+
+
 void MainWindow::on_pushButton_graph01_clicked()
 {
     QCustomPlot *customPlot = ui->customPlot;
@@ -60,43 +62,51 @@ void MainWindow::on_pushButton_graph01_clicked()
 
 }
 
+
 void MainWindow::on_pushButton_graph02_clicked()
 {
-    QCustomPlot *customPlot = ui->customPlot;
+    //QCustomPlot *customPlot = ui->customPlot;
+    QCPCurve *verticalLine;
+    QCPItemTracer *tracer;
 
-    // generate some data:
-    QVector<double> x(101), y(101); // initialize with entries 0..100
-    x[0] =1; y[0]= 1;
-    x[1] =2; y[1]= 3;
-    x[2] =3; y[2]= 1;
-    x[3] =4; y[3]= 2;
-    x[4] =1; y[4]= 5;
-    x[5] =3; y[5]= 4;
-    // create graph and assign data to it:
-    customPlot->addGraph();
-    customPlot->graph(0)->setData(x, y);
-    // give the axes some labels:
-    customPlot->xAxis->setLabel("x");
-    customPlot->yAxis->setLabel("y");
-    // set axes ranges, so we see all data:
-    customPlot->xAxis->setRange(-1, 1);
-    customPlot->yAxis->setRange(0, 1);
+    QCustomPlot *wGraphic = ui->customPlot;
 
+      // Init vertical Line
+      verticalLine = new QCPCurve(wGraphic->xAxis, wGraphic->yAxis);
 
-    //凡例表示
-    customPlot->setAutoAddPlottableToLegend(true);// plottable(=graph)を追加したら自動で凡例に追加
-    customPlot->legend->setVisible(true); // 凡例を表示する
+      // creating a vector for the vertical line
+      QVector<double> x(2) , y(2);
+          x[0] = 0;
+          y[0] = -50;
+          x[1] = 0;
+          y[1] = 50;
 
-    //凡例をグラフの外に表示
-    QCPLayoutGrid *subLayout = new QCPLayoutGrid;  // グラフの右に挿入されるQCPLayoutGrid(subLayout)
-    customPlot->plotLayout()->addElement(0, 1, subLayout); // (Row, Column) = (0,1)にsubLayoutを追加
-    subLayout->addElement(0, 0, new QCPLayoutElement); // subLayoutの(Row, Column) = (0,0)にPadding用QCPLayoutElementを
-    subLayout->addElement(1, 0, customPlot->legend); // (Row, Column) = (1,0)に凡例（Legend）を追加
-    subLayout->addElement(2, 0, new QCPLayoutElement); // 同Paddingを追加
-    subLayout->setColumnStretchFactor(0, 0.01);        // subLayoutの横幅はなるべく小さくする
-    subLayout->setRowStretchFactor(1, 0.01);           // subLayoutの凡例がはいるRow=1はなるべく小さくする
-    customPlot->plotLayout()->setColumnStretchFactor(1, 0.01);
+      // creating of the graphics vector
+      QVector<double> x1(5) , y1(5);
+          x1[0] = -45;
+          y1[0] = -43;
+          x1[1] = 46;
+          y1[1] = 42;
+          x1[2] = -25;
+          y1[2] = -24;
+          x1[3] = -12;
+          y1[3] = 10;
+          x1[4] = 25;
+          y1[4] = 26;
 
-    customPlot->replot();
+      wGraphic->addGraph(wGraphic->xAxis, wGraphic->yAxis);
+      wGraphic->graph(0)->setData(x1,y1);     // Set the coordinates of the points chart
+
+      // Initialize the router
+      tracer = new QCPItemTracer(wGraphic);
+      tracer->setGraph(wGraphic->graph(0));
+
+      wGraphic->xAxis->setLabel("x");
+      wGraphic->yAxis->setLabel("y");
+
+      wGraphic->xAxis->setRange(-50,50);
+      wGraphic->yAxis->setRange(-50,50);
+
+      wGraphic->replot();
 
 }
