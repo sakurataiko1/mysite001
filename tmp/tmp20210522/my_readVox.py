@@ -1,6 +1,6 @@
 #-*- coding-utf8 -*-
 #
-# voxファイルを読み込み、matplotlibで表示する
+# voxファイルを読み込む
 #
 
 import numpy as np
