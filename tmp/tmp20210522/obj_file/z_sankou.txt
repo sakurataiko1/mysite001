@@ -1,6 +1,6 @@
 参考：objフォーマットを手書きする
 
-★objのテキストファイル例 Cube02.obj / Cube02.mtl
+★objのテキストファイル例 Cube02.obj（座標） / Cube02.mtl（色）
 http://maedakobe.rw.xsi.jp/java2/obj_loader2.htm
 
 参考だけ：objフォーマット解説のみ（サンプルでは動作できず。。）
