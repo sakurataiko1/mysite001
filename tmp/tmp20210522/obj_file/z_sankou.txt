@@ -1,0 +1,10 @@
+参考：objフォーマットを手書きする
+
+★objのテキストファイル例 Cube02.obj / Cube02.mtl
+http://maedakobe.rw.xsi.jp/java2/obj_loader2.htm
+
+参考だけ：objフォーマット解説のみ（サンプルでは動作できず。。）
+https://yttm-work.jp/model_render/model_render_0001.html
+
+参考だけ：3DCGの基礎知識 Objファイルを描画するまで
+https://qiita.com/namn1125/items/44356be38b55ceb652fb
