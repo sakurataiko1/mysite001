@@ -1,0 +1,30 @@
+#-*- coding-utf8 -*-
+# 3次元配列は テキストファイルには、そのまま書けないので一旦 2次元に変更する
+#    ※ 通常は 3次元配列は np.save("ファイル名.npy"）でバイナリ出力で良い。
+#       ただし、python-numpyでしか使えない。中身をテキスト確認したい、他のプログラムから読み込みしたい場合のため。
+#
+#    ※ 未：コード未実装 save時に X * Y * Z のようなヘッダー付けて別プログラムで使えるようする。
+#
+#    ※ 未：コード未実装 テキストとして3次元がわかりやすいように[x,y,z] の文字列を入れるとか
+
+import numpy as np
+tmpary_3D = np.arange(24).reshape(2,3,4)
+
+tmpary_2D = tmpary_3D.reshape(6, 4)
+#print("[DEBUG]tmpary_2D=" , tmpary_2D)
+
+tmp_savepath = "c:/tmp/tmp01/test_2D.csv"
+np.savetxt(tmp_savepath, tmpary_2D ,delimiter=',' , fmt="%d")  #整数で書き込み
+#np.savetxt(tmp_savepath, tmpary_2D ,delimiter=',' , fmt="%.1f") #少数点1桁まで書き込み
+print("save2D= ", tmp_savepath)
+
+#----------
+# 2次元配列をもとの3次元配列に戻す 
+readary_2D = np.loadtxt(tmp_savepath, delimiter=',') #デフォルトでフロート型として読み込まれる
+
+readary_3D = readary_2D.reshape(2, 3, 4)
+
+print("[DEBUG]readary_3D=", readary_3D)
+
+
+
