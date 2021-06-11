@@ -70,7 +70,8 @@ void Window::on_pushButton_voxpathSelect_clicked()
     if(ui->lineEdit_voxpath->text() != ""){
         tmpDirPath = QFileInfo(ui->lineEdit_voxpath->text()).absolutePath();
     }
-    loadfileName = QFileDialog::getOpenFileName(this, tr("Select file"), tmpDirPath, tr("text file (*.txt)"));
+    //loadfileName = QFileDialog::getOpenFileName(this, tr("Select file"), tmpDirPath, tr("text file (*.txt)"));
+    loadfileName = QFileDialog::getOpenFileName(this, tr("Select file"), tmpDirPath);
     if(loadfileName.isEmpty() == 1 ){return;} // ファイル選択でキャンセルボタンが押されたら, そのまま終了。
     ui->lineEdit_voxpath->setText(loadfileName);
 

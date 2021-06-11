@@ -214,7 +214,7 @@ void MyGLWidget::paintGL()
     vertices = m_miWidget->func_get_voxGraffic(g_voxfilepath , "vertex");
     colors   = m_miWidget->func_get_voxGraffic(g_voxfilepath , "color");
     //帰り値を一度に取得   //std::tie(vertices, colors) = m_miWidget->func_get_voxGraffic(g_voxfilepath, gval_MainWindow_uiTableListMat, "vertex");
-    qDebug() << "MyGLWidget.cpp-initializeGL vertices=" << vertices;
+    //qDebug() << "MyGLWidget.cpp-initializeGL vertices=" << vertices;
     //qDebug() << "MyGLWidget.cpp-initializeGL colors=" << colors;
 
     //-end- kuroda

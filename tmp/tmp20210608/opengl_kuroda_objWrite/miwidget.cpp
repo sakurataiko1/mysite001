@@ -335,9 +335,10 @@ void miWidget::drawSurfaceOfMesh(int mateNo) {
     j=0;
     k=0;
 
+    int surfaceCnt = 0;
     for(int m=0; m < drawMeshList.size(); m++){
         QList<int> drawSurfaceList = DrawSurface.values(drawMeshList.at(m));
-        qDebug() << "[DEBUG]miWidget.cpp - drawSurfaceOfMesh() m=" << QString::number(m) << "drawMeshList.at(m)= " << drawMeshList.at(m);
+        //qDebug() << "[DEBUG]miWidget.cpp - drawSurfaceOfMesh() m=" << QString::number(m) << "drawMeshList.at(m)= " << drawMeshList.at(m);
         QList<int> meshXYZ = getXYZ(drawMeshList.at(m));
         i = meshXYZ.at(0);
         j = meshXYZ.at(1);
@@ -347,6 +348,7 @@ void miWidget::drawSurfaceOfMesh(int mateNo) {
         for(int n=0; n< drawSurfaceList.size(); n++){
             //もと//getPointOfMesh(i, j, k, drawSurfaceList.at(n), mateNo);
             func_getPointOfMesh_new(i, j, k, drawSurfaceList.at(n), mateNo, n);
+            surfaceCnt = surfaceCnt + 1;
         }
     }
     //outfile.close(); //objファイル書き込み
@@ -916,7 +918,7 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
     getMateNumOfMesh();
     QList<int> tmpQList;
     for(int i=0; i<mateNoOfMesh.size(); i++ ){ tmpQList << mateNoOfMesh[i]; } //[DEBUG]kuroda qDebug表示のため、QListに代入する。
-    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
+    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
 
     //描画するメッシュの面情報を取得
     checkMateNumOfAdjoinMesh();
@@ -933,7 +935,7 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
 
     QString WriteFilePath =  QFileInfo(voxfilePath).absolutePath() + "/log_DrawMeshXYZList.txt";
     QString WriteFileMode = "WriteOnly";
-    qDebug() << "[DEBUG] miWidget.cpp-func_get_voxGraffic write-log-DrawMeshXYZList path=" << WriteFilePath;
+    //qDebug() << "[DEBUG] miWidget.cpp-func_get_voxGraffic write-log-DrawMeshXYZList path=" << WriteFilePath;
     fileWrteForWindows(WriteFilePath, WriteFileMode, g_DrawMeshXYZList);
 
     if(mode == "color"){
@@ -1013,19 +1015,19 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
 
 void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surfaceNo, int input_MateNo, int in_surfaceCnt) //kuroda　もとのgetPointOfMesh 関数から変更
 {
-    qDebug() << "[DEBUG]miWidget.cpp-func_getPointOfMesh_new MateNo=" << input_MateNo << " surfaceNo " << surfaceNo  << " in_i=" << in_i << " in_i=" << in_i << " in_i=" << in_i ;
+    //qDebug() << "[DEBUG]miWidget.cpp-func_getPointOfMesh_new MateNo=" << input_MateNo << " surfaceNo " << surfaceNo  << " in_i=" << in_i << " in_j=" << in_j << " in_k=" << in_k ;
 
-    //-start- objファイル作成前準備
-    QString outfileDir =  QFileInfo(QFile(voxfilePath)).absolutePath() + "/objfile_" + QFileInfo(QFile(voxfilePath)).fileName();//2021.06.xx-01 for-obj
-    QString outfilePath = outfileDir + "/" + QFileInfo(QFile(voxfilePath)).fileName() + "_" + QString::number(input_MateNo) + ".obj"; //
-    QFile outfile(outfilePath);
-    if(!outfile.open(QIODevice::Append | QIODevice::Text)){
-        QMessageBox::information(this, tr("Unable to openfile"), outfile.errorString());
-        return;
-    }
-    QTextStream g_out_obj(&outfile);
-    //-end- objファイル作成
+//    //-start- objファイル作成前準備
+//    QString outfileDir =  QFileInfo(QFile(voxfilePath)).absolutePath() + "/objfile_" + QFileInfo(QFile(voxfilePath)).fileName() ;//2021.06.xx-01 for-obj
+//    QString outfilePath = outfileDir + "/" + QFileInfo(QFile(voxfilePath)).fileName() + "_" + QString::number(input_MateNo) + ".obj"; //
+//    QFile outfile(outfilePath);
+//    if(!outfile.open(QIODevice::Append | QIODevice::Text)){
+//        QMessageBox::information(this, tr("Unable to openfile"), outfile.errorString());
+//        return;
+//    }
+//    QTextStream g_out_obj(&outfile);
 
+//    //-end- objファイル作成
 
     QString vertexP;
     QStringList vertexName ;
@@ -1064,7 +1066,8 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
     QVector3D vertexH = QVector3D(nowOP_x , nowOP_y + meshsize_y, nowOP_z - meshsize_z);
 
     //1つの正方形平面を作る。　(openGLはすべての図形を 三角形で描くため、２つの三角形で1つの正方形平面を作る。)
-    if(surfaceNo == 1){ //Front
+    //if(surfaceNo == 1){ //Front
+    if(surfaceNo == 2){ //glFront 2021.06.xx-01変更  checkMate関数では通常座標（Y:奥行　手前が-,奥が+)としているが、ここではopenGL用（glZ前が-, 奥が+で描画するための変更）
         g_verticesVector << vertexA; //１つ目の三角形
         g_verticesVector << vertexB;
         g_verticesVector << vertexC;
@@ -1076,47 +1079,51 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
             g_colorsVector << tmpColorVector; // 各頂点6つ分の色定義
         }
 
+
         //objファイル書き込み
-        //例 FRONT
-        //mtllib sample_plane_front_blender.mtl
-        //o Plane
-        //v -1.000000 1.000000 1.000000
-        //v -1.000000 -1.000000 1.000000
-        //v 1.000000 1.000000 1.000000
-        //v 1.000000 -1.000000 1.000000
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() <<endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl;
-        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() <<endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D A B
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //B C D
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexD, vertexA, vertexC, vertexB);
+
+//        //例 FRONT
+//        //mtllib sample_plane_front_blender.mtl
+//        //o Plane
+//        //v -1.000000 1.000000 1.000000
+//        //v -1.000000 -1.000000 1.000000
+//        //v 1.000000 1.000000 1.000000
+//        //v 1.000000 -1.000000 1.000000
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() <<endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl;
+//        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() <<endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D A B
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //B C D
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt);
 
        //例 objファイル書式　v：可変　vt,vn,s行：固定 f行：可変。Planeごとにカウントアップ必要。
 //1面目 bottom
@@ -1150,7 +1157,9 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
 //                f 8/7/2 7/8/2 5/5/2
     }
 
-    if(surfaceNo == 2){ //Back
+    //if(surfaceNo == 2){ //Back
+    if(surfaceNo == 1){ //glBack 2021.06.xx-01変更  checkMate関数では通常座標（Y:奥行　手前が-,奥が+)としているが、ここではopenGL用（glZ前が-, 奥が+で描画するための変更）
+
         g_verticesVector << vertexF; //１つ目の三角形
         g_verticesVector << vertexE;
         g_verticesVector << vertexH;
@@ -1163,46 +1172,52 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
         }
 
         //objファイル書き込み
-        //例 BACK
-        //mtllib sample_plane_back_blender.mtl
-        //o Plane
-        //v -1.000000 1.000000 -0.000000
-        //v -1.000000 -1.000000 -0.000000
-        //v 1.000000 1.000000 0.000000
-        //v 1.000000 -1.000000 0.000000
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() <<endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
-        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() <<endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //H E F
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F G H
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexH, vertexE, vertexG, vertexF);
+
+//        //objファイル書き込み
+//        //例 BACK
+//        //mtllib sample_plane_back_blender.mtl
+//        //o Plane
+//        //v -1.000000 1.000000 -0.000000
+//        //v -1.000000 -1.000000 -0.000000
+//        //v 1.000000 1.000000 0.000000
+//        //v 1.000000 -1.000000 0.000000
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() <<endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
+//        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() <<endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //H E F
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F G H
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+
+
     }
 
     if(surfaceNo == 3){ //Right
@@ -1218,47 +1233,51 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
         }
 
         //objファイル書き込み
-        //例 Right
-//        #mtllib sample_plane_right_blender.mtl
-//        o Plane
-//        v 1.000000 1.000000 1.000000
-//        v 1.000000 -1.000000 1.000000
-//        v 1.000000 1.000000 -1.000000
-//        v 1.000000 -1.000000 -1.000000
-        //
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() <<endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
-        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() <<endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //C B F
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F G C
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexC, vertexB, vertexG, vertexF);
+
+//        //objファイル書き込み
+//        //例 Right
+////        #mtllib sample_plane_right_blender.mtl
+////        o Plane
+////        v 1.000000 1.000000 1.000000
+////        v 1.000000 -1.000000 1.000000
+////        v 1.000000 1.000000 -1.000000
+////        v 1.000000 -1.000000 -1.000000
+//        //
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() <<endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
+//        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() <<endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //C B F
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F G C
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt);
     }
 
     if(surfaceNo == 4){ //Left
@@ -1274,47 +1293,51 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
          }
 
         //objファイル書き込み
-        //例 Left
-        //mtllib sample_plane_left_blender.mtl
-        //o Plane
-        //v 0.000000 1.000000 1.000000
-        //v -0.000000 -1.000000 1.000000
-        //v 0.000000 1.000000 -1.000000
-        //v -0.000000 -1.000000 -1.000000
-        //
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() <<endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl;
-        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() <<endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D A E
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //E H D
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexD, vertexA, vertexH, vertexE);
+
+//        //objファイル書き込み
+//        //例 Left
+//        //mtllib sample_plane_left_blender.mtl
+//        //o Plane
+//        //v 0.000000 1.000000 1.000000
+//        //v -0.000000 -1.000000 1.000000
+//        //v 0.000000 1.000000 -1.000000
+//        //v -0.000000 -1.000000 -1.000000
+//        //
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() <<endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl;
+//        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() <<endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D A E
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //E H D
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt);
     }
 
     if(surfaceNo == 5){ //Top
@@ -1330,46 +1353,50 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
         }
 
         //objファイル書き込み
-        //例 Top
-        //mtllib sample_plane_top_blender.mtl
-        //o Plane
-        //v -1.000000 1.000000 1.000000
-        //v 1.000000 1.000000 1.000000
-        //v -1.000000 1.000000 -1.000000
-        //v 1.000000 1.000000 -1.000000
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl;
-        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D C G
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //G H D
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexD, vertexC, vertexH, vertexG);
+
+//        //objファイル書き込み
+//        //例 Top
+//        //mtllib sample_plane_top_blender.mtl
+//        //o Plane
+//        //v -1.000000 1.000000 1.000000
+//        //v 1.000000 1.000000 1.000000
+//        //v -1.000000 1.000000 -1.000000
+//        //v 1.000000 1.000000 -1.000000
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexD.x() << " " << vertexD.y() << " " << vertexD.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexC.x() << " " << vertexC.y() << " " << vertexC.z() <<endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexH.x() << " " << vertexH.y() << " " << vertexH.z() <<endl;
+//        g_out_obj << "v " << vertexG.x() << " " << vertexG.y() << " " << vertexG.z() <<endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //D C G
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //G H D
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt);
 
 
     }
@@ -1391,46 +1418,50 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
         }
 
         //objファイル書き込み
-        //例 Bottom
-        //mtllib sample_plane_bottom_blender.mtl
-        //o Plane
-        //v -1.000000 0.000000 1.000000
-        //v 1.000000 0.000000 1.000000
-        //v -1.000000 0.000000 -1.000000
-        //v 1.000000 0.000000 -1.000000
-        g_out_obj << "#" << endl;
-        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
-        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
-        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() << endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
-        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() << endl; //頂点順番はこれから修正する
-        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() << endl;
-        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() << endl;
-        //vt,vn,s行：固定
-        g_out_obj << "vt 0.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 0.000000" << endl;
-        g_out_obj << "vt 1.000000 1.000000" << endl;
-        g_out_obj << "vt 0.000000 1.000000" << endl;
-        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
-        g_out_obj << "s off"<< endl;
-        //f行：可変。Planeごとにカウントアップ必要。
-        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //A B F
-        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F E A
-        QList<int> vList,vtList;
-        vList << 1 << 2 << 4 << 4 << 3 << 1;
-        vtList << 1 << 2 << 3 << 3 << 4 << 1;
-        for(int i=0; i < vList.count(); i++ ){
-            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
-            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
-        }
-        QString tmpstr;
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(0), vtList.at(0),in_surfaceCnt+1,
-                                     vList.at(1), vtList.at(1),in_surfaceCnt+1,
-                                     vList.at(2), vtList.at(2),in_surfaceCnt+1);
-        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-                                     vList.at(3), vtList.at(3),in_surfaceCnt+1,
-                                     vList.at(4), vtList.at(4),in_surfaceCnt+1,
-                                     vList.at(5), vtList.at(5),in_surfaceCnt+1);
+        QString tmpmsg = "# MateNo=" + QString::number(input_MateNo) + " surfaceNo " + QString::number(surfaceNo)  + " in_i=" + QString::number(in_i) + " in_j=" + QString::number(in_j) + " in_k=" + QString::number(in_k) + " in_surfacecnt=" + QString::number(in_surfaceCnt);
+        func_objfile_write(input_MateNo, in_surfaceCnt, tmpmsg ,vertexA, vertexB, vertexE, vertexF);
+
+//        //objファイル書き込み
+//        //例 Bottom
+//        //mtllib sample_plane_bottom_blender.mtl
+//        //o Plane
+//        //v -1.000000 0.000000 1.000000
+//        //v 1.000000 0.000000 1.000000
+//        //v -1.000000 0.000000 -1.000000
+//        //v 1.000000 0.000000 -1.000000
+//        g_out_obj << "#" << endl;
+//        g_out_obj << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+//        //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+//        g_out_obj << "v " << vertexA.x() << " " << vertexA.y() << " " << vertexA.z() << endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+//        g_out_obj << "v " << vertexB.x() << " " << vertexB.y() << " " << vertexB.z() << endl; //頂点順番はこれから修正する
+//        g_out_obj << "v " << vertexE.x() << " " << vertexE.y() << " " << vertexE.z() << endl;
+//        g_out_obj << "v " << vertexF.x() << " " << vertexF.y() << " " << vertexF.z() << endl;
+//        //vt,vn,s行：固定
+//        g_out_obj << "vt 0.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 0.000000" << endl;
+//        g_out_obj << "vt 1.000000 1.000000" << endl;
+//        g_out_obj << "vt 0.000000 1.000000" << endl;
+//        g_out_obj << "vn 0.0000 1.0000 0.0000" << endl;
+//        g_out_obj << "s off"<< endl;
+//        //f行：可変。Planeごとにカウントアップ必要。
+//        //g_out_obj << "f 1/1/1 2/2/1 4/3/1"<< endl; //A B F
+//        //g_out_obj << "f 4/3/1 3/4/1 1/1/1"<< endl; //F E A
+//        QList<int> vList,vtList;
+//        vList << 1 << 2 << 4 << 4 << 3 << 1;
+//        vtList << 1 << 2 << 3 << 3 << 4 << 1;
+//        for(int i=0; i < vList.count(); i++ ){
+//            vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+//            vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+//        }
+//        QString tmpstr;
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(0), vtList.at(0),in_surfaceCnt+1,
+//                                     vList.at(1), vtList.at(1),in_surfaceCnt+1,
+//                                     vList.at(2), vtList.at(2),in_surfaceCnt+1);
+//        g_out_obj << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+//                                     vList.at(3), vtList.at(3),in_surfaceCnt+1,
+//                                     vList.at(4), vtList.at(4),in_surfaceCnt+1,
+//                                     vList.at(5), vtList.at(5),in_surfaceCnt+1);
 
         //1面目 bottom
         //                o Plane
@@ -1448,7 +1479,66 @@ void miWidget::func_getPointOfMesh_new(int in_i, int in_j, int in_k, int surface
         //                f 4/3/1 3/4/1 1/1/1
     }
 
-    outfile.close(); //objファイル書き込み。
+    //outfile.close(); //objファイル書き込み。
+
 }
 
+void miWidget::func_objfile_write(int input_MateNo, int in_surfaceCnt, QString in_msg1,  QVector3D in_vertex1, QVector3D in_vertex2, QVector3D in_vertex3, QVector3D in_vertex4) //objファイル書き込み
+{
+    //-start- objファイル作成前準備
+    QString outfileDir =  QFileInfo(QFile(voxfilePath)).absolutePath() + "/objfile_" + QFileInfo(QFile(voxfilePath)).fileName() ;//2021.06.xx-01 for-obj
+    QString outfilePath = outfileDir + "/" + QFileInfo(QFile(voxfilePath)).fileName() + "_" + QString::number(input_MateNo) + ".obj"; //
+    QFile outfile1(outfilePath);
+    if(!outfile1.open(QIODevice::Append | QIODevice::Text)){
+        QMessageBox::information(this, tr("Unable to openfile"), outfile1.errorString());
+        return;
+    }
+    QTextStream g_out_obj1(&outfile1);
+    //-end- objファイル作成
 
+    qDebug() << "[DEBUG]01miWidget.cpp-func_objfile_write()";
+
+    //objファイル書き込み
+    //例 FRONT
+    //mtllib sample_plane_front_blender.mtl
+    //o Plane
+    //v -1.000000 1.000000 1.000000
+    //v -1.000000 -1.000000 1.000000
+    //v 1.000000 1.000000 1.000000
+    //v 1.000000 -1.000000 1.000000
+    g_out_obj1 << "# " + in_msg1 << endl;
+    g_out_obj1 << "o Plane." + QString::number(in_surfaceCnt) +  "\n";
+    //objでは、(x,y,z) 水平：Xは小さいほうから、奥行Zは大きい方から。高さYはx,z に合わせて。
+    g_out_obj1 << "v " << in_vertex1.x() << " " << in_vertex1.y() << " " << in_vertex1.z() <<endl; //objの場合↑とは描き方が違うので注意すること　objテキストファイルに書き出すは4頂点だけ
+    g_out_obj1 << "v " << in_vertex2.x() << " " << in_vertex2.y() << " " << in_vertex2.z() <<endl; //頂点順番はこれから修正する
+    g_out_obj1 << "v " << in_vertex3.x() << " " << in_vertex3.y() << " " << in_vertex3.z() <<endl;
+    g_out_obj1 << "v " << in_vertex4.x() << " " << in_vertex4.y() << " " << in_vertex4.z() <<endl;
+    //vt,vn,s行：固定
+    g_out_obj1 << "vt 0.000000 0.000000" << endl;
+    g_out_obj1 << "vt 1.000000 0.000000" << endl;
+    g_out_obj1 << "vt 1.000000 1.000000" << endl;
+    g_out_obj1 << "vt 0.000000 1.000000" << endl;
+    g_out_obj1 << "vn 0.0000 1.0000 0.0000" << endl;
+    g_out_obj1 << "s off"<< endl;
+    //f行：可変。Planeごとにカウントアップ必要。
+    //g_out_obj1 << "f 1/1/1 2/2/1 4/3/1"<< endl; //D A B
+    //g_out_obj1 << "f 4/3/1 3/4/1 1/1/1"<< endl; //B C D
+    QList<int> vList,vtList;
+    vList << 1 << 2 << 4 << 4 << 3 << 1;
+    vtList << 1 << 2 << 3 << 3 << 4 << 1;
+    for(int i=0; i < vList.count(); i++ ){
+        vList[i] = vList.at(i) + 4 * in_surfaceCnt;
+        vtList[i] = vtList.at(i) + 4 * in_surfaceCnt;
+    }
+    QString tmpstr;
+    g_out_obj1 << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+                                 vList.at(0), vtList.at(0), in_surfaceCnt + 1,
+                                 vList.at(1), vtList.at(1), in_surfaceCnt + 1,
+                                 vList.at(2), vtList.at(2), in_surfaceCnt + 1);
+    g_out_obj1 << tmpstr.asprintf("f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+                                 vList.at(3), vtList.at(3), in_surfaceCnt + 1,
+                                 vList.at(4), vtList.at(4), in_surfaceCnt + 1,
+                                 vList.at(5), vtList.at(5), in_surfaceCnt + 1);
+
+    outfile1.close(); //objファイル書き込み。
+}

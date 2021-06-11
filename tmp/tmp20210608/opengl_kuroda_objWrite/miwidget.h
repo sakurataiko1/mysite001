@@ -75,8 +75,7 @@ public:
     //kuroda commentout//void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
 
 
-
-
+    void func_objfile_write(int input_MateNo, int in_surfaceCnt, QString in_msg, QVector3D in_vertex1, QVector3D in_vertex2, QVector3D in_vertex3, QVector3D in_vertex4); //objファイル書き込み
 
 
 
