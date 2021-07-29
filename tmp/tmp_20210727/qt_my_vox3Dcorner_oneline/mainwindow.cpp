@@ -94,6 +94,7 @@ void MainWindow::on_pushButton_load_clicked()
 
     //描画するメッシュの面情報を取得
     func_meshSurfaceXY_get();
+    //func_meshSurfaceXZ_get();
 
     func_get_rectVertex(); //平面mesh始点・頂点(g_drawMeshHash.values)から、　3Drectangleとしての、6平面の頂点情報を取得する。
 
@@ -560,9 +561,8 @@ void MainWindow::func_objfile_write_rectangle(QVector3D vertexglA, QVector3D ver
 }
 
 
-void MainWindow::func_meshSurfaceXY_get(){ //描くMeshを0 , 描かないMeshを1にする
-    //これ　→　案1 XZ面だけ(面単位で連続するものを取得する）
-    //案2 XZ面だけ（1行単位で連続するものを取得する）
+void MainWindow::func_meshSurfaceXY_get(){
+    //1列で完結させて、同じマテリアルは始点・終点で連続して描く
 
     //QStringList startXYList; //始点候補　key:マテリアル番号　value=x, y, z　　終点決め判定時に追加。始点決め判定時に参照と削除。 削除処理があるのでHashより扱いやすいQstringListを使う
     QString ***DEBUG_voxSurface; //DEBUG表示用
@@ -605,158 +605,85 @@ void MainWindow::func_meshSurfaceXY_get(){ //描くMeshを0 , 描かないMesh�
     //始点rectStartList Mat,始点x,y,z終点 x, y z,
     for(int z=0; z<g_nz; z++){
         for(int y=0; y<g_ny; y++){
+            int xStart = -1;
             for(int x=0; x<g_nx; x++){
                 //ここでの初期化はNG//DEBUG_voxSurface[x][y][z] = "  0"; //初期値=0, 　始点=1,  終点=2
 
-                //XY面　始点ではない → 処理スキップ　下が同じマテリアル場合
-                if(z > 0){
-                    if(g_voxDomain[x][y][z] == g_voxDomain[x][y][z-1]){ continue; }
-                }
-
-                //XY面　始点ではない → 処理スキップ　= 既に描いた範囲内の場合
-                int flag_drawed = 0;
-                QStringList tmp_cornerList = g_cornerXYHash.values(g_voxDomain[x][y][z]);
-                for(int i=0; i<tmp_cornerList.size(); i++){
-                    QStringList onelineList = tmp_cornerList.at(i).split(","); //(start x, y, z, end x, y, z)
-                    //0 番目はマテリアル番号
-                    int xStart = onelineList.at(1).toInt();
-                    int yStart = onelineList.at(2).toInt();
-                    int zStart = onelineList.at(3).toInt();
-                    int xEnd = onelineList.at(4).toInt();
-                    int yEnd = onelineList.at(5).toInt();
-                    int zEnd = onelineList.at(6).toInt();
-                    //現在地点が既に描いた範囲かを判定
-                    if( x >= xStart && x<= xEnd && y >= yStart && y<= yEnd && z >= zStart && z<= zEnd){
-                        flag_drawed = 1;
-                        continue; //break;
+                //始点判定(1行単位)
+                int judge_cnt = 0;
+                if(z==0 || z==nz-1){ //Z面判定
+                    judge_cnt++; //下端、上端
+                }else {
+                    if(g_voxDomain[x][y][z] != g_voxDomain[x][y][z-1] || g_voxDomain[x][y][z] != g_voxDomain[x][y][z+1]){ //1つ上・下どちらか一方でも違うマテリアルであれば描く
+                        judge_cnt++;
                     }
                 }
-
-                int xStart = x;
-                int yStart = y;
-                int xEnd = x;
-                int yEnd = y;
-
-                //※始点・終点ペアで見つける処理にしているが、都度ループするので遅いかも→処理速度検討は後ほど。
-                //----------------------------------------------------------------------
-                //XY面　始点である場合①　←x:左 と y:前が違うマテリアル
-                int flag_startXY = 0;
-                int cnt_judge = 0;
-                if(x == 0){
-                    cnt_judge = cnt_judge + 1;
-                } else {
-                    if( g_voxDomain[x][y][z] != g_voxDomain[x-1][y][z]){  cnt_judge = cnt_judge + 1; }
-                }
-                if(y == 0){
-                     cnt_judge = cnt_judge + 1;
-                } else {
-                    if( g_voxDomain[x][y][z] != g_voxDomain[x][y-1][z]){  cnt_judge = cnt_judge + 1;}
-                }
-                if(cnt_judge == 2){flag_startXY = 1;}
-
-                //----------------------------------------------------------------------
-                //XY面　始点である場合②　←(x:左:違う) かつ (y:前同じ　だが、　現地点がまだ描かれていないものの場合。）
-                cnt_judge = 0;
-                if(x == 0) {
-                    cnt_judge = cnt_judge + 1;
+                if(x == 0){ //X面判定
+                    judge_cnt++; //左端
                 }else if(g_voxDomain[x][y][z] != g_voxDomain[x-1][y][z]){
-                    cnt_judge = cnt_judge + 1;
+                    judge_cnt++; //左 違う場合
                 }
-                if(y > 0){
-                    if(g_voxDomain[x][y][z] == g_voxDomain[x][y-1][z] && flag_drawed == 0){ //現在地点がまだ、描かれていない場合
-                        cnt_judge = cnt_judge + 1;
-                    }
-                }
-                if(cnt_judge == 2){flag_startXY = 1;}
-
-                //----------------------------------------------------------------------
-                //XY面　始点である場合③　←(y:左同じ だが、　現地点がまだ描かれていないもの。） かつ (y:前 違う)
-                cnt_judge = 0;
-                if(x == 0) {
-                    cnt_judge = cnt_judge + 1;
-                }else if(x > 0){
-                    if(g_voxDomain[x][y][z] == g_voxDomain[x-1][y][z] && flag_drawed == 0){ //現在地点がまだ、描かれていない場合
-                        cnt_judge = cnt_judge + 1;
-                    }
-                }
-                if(y == 0) {
-                    cnt_judge = cnt_judge + 1;
-                }else if(g_voxDomain[x][y][z] != g_voxDomain[x][y-1][z]){
-                    cnt_judge = cnt_judge + 1;
-                }
-                if(cnt_judge == 2){flag_startXY = 1;}
-
-                //----------------------------------------------------------------------
-                //XY面　始点である場合④　← //(y:左違う)  かつ ((y:前 同じ) かつ (現在地点がまだ、描かれていない場合))
-                cnt_judge = 0;
-                if(x == 0) {
-                    cnt_judge = cnt_judge + 1;
-                }else if(x > 0){
-                    if(g_voxDomain[x][y][z] != g_voxDomain[x-1][y][z] ){
-                        cnt_judge = cnt_judge + 1;
-                    }
-                }
-                if(y == 0) {
-                    cnt_judge = cnt_judge + 1;
-                }else if(g_voxDomain[x][y][z] == g_voxDomain[x][y-1][z] &&  flag_drawed == 0){ //現在地点がまだ、描かれていない場合
-                    cnt_judge = cnt_judge + 1;
-                }
-                if(cnt_judge == 2){flag_startXY = 1;}
-
-                //----------------------------------------------------------------------
-                if(flag_startXY == 1){
-                    QString tmpstr;
+                if(judge_cnt == 2){
                     xStart = x;
-                    yStart = y;
-                    tmpstr =  tmpstr.asprintf("%d,%d,%d,%d", g_voxDomain[x][y][z], xStart,yStart,z);
-                    qDebug() << "[DEBUG]func_meshsurfaceXY_get() start-point tmpstr=" << tmpstr;
-                    //startXYList << tmpstr;
-                    DEBUG_voxSurface[xStart][yStart][z] = QString::number(g_voxDomain[xStart][yStart][z]) +  "S";
-
-                    for(int i=xStart; i<g_nx; i++){ //1行右端まで、X終点を探す
-                        //y終点を探す (X範囲内でもっとも近いy。最小=1つ後ろにマテリアル違いがあれば、その時点でzEnd=z　に決定。）
-                        for(int j=yStart; j<ny; j++){
-                            if(i>xStart && yEnd==yStart){ break; } //既に最小なのでスキップ
-                            if(i>xStart && j>yEnd){ break; } //最小ではないのでスキップ
-                            if(j == ny-1){
-                                yEnd = j;
-                            }else if(j < ny-1){
-                                if( g_voxDomain[i][j][z] != g_voxDomain[i][j+1][z]){ //1つ後ろが違う
-                                    yEnd = j;
-                                    break;
-                                }
-                            }
-                            //if( g_voxDomain[x][y][z] ==  g_voxDomain[x+1][y][z]){ //左隣はXとして始点候補になる
-                            //    QString tmpstr;
-                            //    startXYList << tmpstr.asprintf("%d,%d,%d,%d", g_voxDomain[x][y][z], x+1, j, z);
-                            //}
-                        }
-                        //-end- j=yStart
-
-                        //X終点
-                        int flag_xend = 0;
-                        if(i==g_nx-1){
-                            flag_xend = 1;
-                        }else if(g_voxDomain[i][y][z] != g_voxDomain[i+1][y][z]){
-                            flag_xend =1;
-                        }
-                        if(flag_xend == 1){
-                            xEnd = i;
-                            QString tmpstr;
-                            tmpstr = tmpstr.asprintf("%d, %d,%d,%d,%d,%d,%d",g_voxDomain[xStart][yStart][z], xStart, yStart, z, xEnd, yEnd ,z);
-                            g_cornerXYHash.insert(g_voxDomain[x][y][z], tmpstr);
-                            qDebug() << "[DEBUG]func_meshsurfaceXY_get() start-end-point tmpstr=" << tmpstr;
-                            //DEBUG_voxSurface[xStart][yStart][z] = QString::number(g_voxDomain[xStart][yStart][z]) +  "S";
-                            DEBUG_voxSurfaceEnd[xEnd][yEnd][z] = QString::number(g_voxDomain[xStart][yStart][z]) +  "E";
-                            break;
-                        }
-
-                    } //-end- for i=x;
-
-
-
+                    DEBUG_voxSurface[xStart][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "S";
                 }
-                //-end- if(flag_start == 1)
+
+                 //終点判定(1行単位)[1] x==0　（左端）　かつ　始点・終点が同じ場合
+                if(xStart==0 && x==0 ){
+                    if(g_voxDomain[x][y][z] != g_voxDomain[x+1][y][z] || g_voxDomain[x][y][z] == g_voxDomain[x+1][y][z+1]){ //右が違う　or 右上が同じ
+                        QString tmpstr;
+                        tmpstr = tmpstr.asprintf("%d,%d,%d,%d,%d,%d,%d",g_voxDomain[xStart][y][z], xStart, y, z, x, y ,z);
+                        g_cornerXYHash.insert(g_voxDomain[x][y][z], tmpstr);
+                        DEBUG_voxSurface[x][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "SE";
+                        xStart = -1;
+                        continue;
+                    }
+                }
+
+                //終点判定(1行単位)[2] //右が違う・　または右上が同じ
+                if(xStart > -1 && ( x > 0 && x < nx-1)){
+                    judge_cnt = 0 ;
+                    if(g_voxDomain[x][y][z] != g_voxDomain[x+1][y][z]){
+                            judge_cnt++;
+                    }
+                    if(z == nz-1){
+                        judge_cnt++;
+                    }else {
+                        if(g_voxDomain[x][y][z] == g_voxDomain[x+1][y][z+1]){ //右上が同じマテリアルであれば描かない→xは終点になる
+                            judge_cnt++;
+                        }
+                    }
+                    if(judge_cnt >= 1){
+                        QString tmpstr;
+                        tmpstr = tmpstr.asprintf("%d,%d,%d,%d,%d,%d,%d",g_voxDomain[xStart][y][z], xStart, y, z, x, y ,z);
+                        g_cornerXYHash.insert(g_voxDomain[x][y][z], tmpstr);
+                        qDebug() << "[DEBUG]func_meshsurfaceXY_get() start-end-point tmpstr=" << tmpstr;
+                        DEBUG_voxSurface[xStart][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "S";
+                        if(DEBUG_voxSurface[x][y][z].contains("S")){ //始点・終点が同じ場合
+                            DEBUG_voxSurface[x][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "SE";
+                        } else {
+                            DEBUG_voxSurface[x][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "E";
+                        }
+                        xStart = -1;
+                        continue;
+                    }
+                }
+
+                //終点判定(1行単位)[3] x==nx-1　（右端）
+                if(xStart>-1 && x==nx-1 ){
+                    QString tmpstr;
+                    tmpstr = tmpstr.asprintf("%d,%d,%d,%d,%d,%d,%d",g_voxDomain[xStart][y][z], xStart, y, z, x, y ,z);
+                    g_cornerXYHash.insert(g_voxDomain[x][y][z], tmpstr);
+                    qDebug() << "[DEBUG]func_meshsurfaceXY_get() start-end-point tmpstr=" << tmpstr;
+                    DEBUG_voxSurface[xStart][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "S";
+                    if(DEBUG_voxSurface[x][y][z].contains("S")){ //始点・終点が同じ場合
+                        DEBUG_voxSurface[x][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "SE";
+                    } else {
+                        DEBUG_voxSurface[x][y][z] = QString::number(g_voxDomain[xStart][y][z]) +  "E";
+                    }
+                    xStart = -1;
+                    continue;
+                }
 
             }
             //-end- for x
@@ -778,19 +705,7 @@ void MainWindow::func_meshSurfaceXY_get(){ //描くMeshを0 , 描かないMesh�
        }
     }
 
-    //[DEBUG]内容表示 End
-    qDebug() << "\n\n[DEBUG]func_meshSurface_get  end-point----------------------------------------";
-    for(int  z=0; z < nz; z++){
-       QString tmpstr;
-       qDebug() << "\n[DEBUG]func_meshSurface_get z=" << QString::number(z) << "bottom-left (0,0) top-right=(xmax, ymax)";
-       for(int  y=ny-1; y >=0 ; y--){ //確認用に Y座標　左下(0,0) 右上(xmax, ymax)で表示する
-           QString tmpstr="";
-           for(int x=0; x< nx; x++){
-               tmpstr = tmpstr + " " + DEBUG_voxSurfaceEnd[x][y][z];
-           }
-           qDebug() << tmpstr;
-       }
-    }
 
 }
+
 

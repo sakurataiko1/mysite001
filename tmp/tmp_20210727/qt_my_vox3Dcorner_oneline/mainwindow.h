@@ -69,6 +69,7 @@ public:
     void func_vox_read3Darray(); //voxデータ　3次元配列に格納
 
     void func_meshSurfaceXY_get(); //表示する面をget (隣とマテリアル違いの箇所　3Darray)
+    //void func_meshSurfaceXZ_get(); //表示する面をget (隣とマテリアル違いの箇所　3Darray)
     int ***g_voxSurface;
 
     //void func_checkMeshCorner_2D(); //描画するメッシュの面情報(始点・終点)を取得
