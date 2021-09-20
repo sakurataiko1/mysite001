@@ -29,23 +29,24 @@ void MainWindow::on_pushButton_Run_clicked()
     //1 0 0
     for(int i=0; i<zahyoList.size(); i++){
         if (zahyoList.at(i).startsWith("# point start")){
-            QString oneline = zahyoList.at(i+1).trimmed();
-            QStringList tmpList = zahyoList.at(i+1).trimmed().split(" ");
+            QString surfaceStr = zahyoList.at(i+1).trimmed(); //Front,Back,Right,Left,Top,Bottom　のいずれか
+
+            QStringList tmpList = zahyoList.at(i+2).trimmed().split(" ");
             QVector3D vertex1 = QVector3D(tmpList.at(0).toInt(), tmpList.at(1).toInt(), tmpList.at(2).toInt());
 
-            tmpList = zahyoList.at(i+2).split(" ");
+            tmpList = zahyoList.at(i+3).split(" ");
             QVector3D vertex2 = QVector3D(tmpList.at(0).toInt(), tmpList.at(1).toInt(), tmpList.at(2).toInt());
 
-            tmpList = zahyoList.at(i+3).split(" ");
+            tmpList = zahyoList.at(i+4).split(" ");
             QVector3D vertex3 = QVector3D(tmpList.at(0).toInt(), tmpList.at(1).toInt(), tmpList.at(2).toInt());
 
-            tmpList = zahyoList.at(i+4).split(" ");
+            tmpList = zahyoList.at(i+5).split(" ");
             QVector3D vertex4 = QVector3D(tmpList.at(0).toInt(), tmpList.at(1).toInt(), tmpList.at(2).toInt());
 
             //objファイル形式にしたものを1行ずつlineEditに入れる
             int matNum = 1; //matnum今回は不要だけど、流用元のまま残しておく
-            QString msg1 = "Plane_" + QString::number(surfaceCnt);
-            func_objfile_write_plane(matNum, surfaceCnt, msg1,  vertex1, vertex2, vertex3, vertex4); //objファイル書き込み
+            QString msg1 = "Plane_" + QString::number(surfaceCnt) + " " + surfaceStr;
+            func_objfile_write_plane(vertex1, vertex2, vertex3, vertex4, matNum, surfaceCnt, msg1, surfaceStr); //objファイル書き込み
 
             surfaceCnt++;
         }
@@ -60,7 +61,7 @@ void MainWindow::on_pushButton_Run_clicked()
 }
 
 
-void MainWindow::func_objfile_write_plane(int in_matNum, int in_surfaceCnt, QString in_msg1,  QVector3D in_vertex1, QVector3D in_vertex2, QVector3D in_vertex3, QVector3D in_vertex4) //objファイル書き込み
+void MainWindow::func_objfile_write_plane(QVector3D in_vertex1, QVector3D in_vertex2, QVector3D in_vertex3, QVector3D in_vertex4, int input_matNum, int in_surfaceCnt, QString in_msg1, QString in_surfaceStr) //objファイル書き込み
 {
     //-start- objファイル作成前準備
     //QString voxfilePath = ui->lineEdit_voxpath->text();
@@ -97,7 +98,14 @@ void MainWindow::func_objfile_write_plane(int in_matNum, int in_surfaceCnt, QStr
     g_out_obj1 << "vt 1.000000 0.000000" ;
     g_out_obj1 << "vt 1.000000 1.000000" ;
     g_out_obj1 << "vt 0.000000 1.000000" ;
-    g_out_obj1 << "vn 0.0000 1.0000 0.0000" ;
+    QString vnStr = "vn 0.0000 0.0000 1.0000";
+    if(in_surfaceStr == "Front"){  vnStr = "vn 0.0000 0.0000 1.0000" ; }
+    if(in_surfaceStr == "Back"){   vnStr = "vn 0.0000 0.0000 -1.0000" ; }
+    if(in_surfaceStr == "Right"){  vnStr = "vn 1.0000 0.0000 0.0000" ; }
+    if(in_surfaceStr == "Left"){   vnStr = "vn -1.0000 0.0000 0.0000" ; }
+    if(in_surfaceStr == "Top"){    vnStr = "vn 0.0000 1.0000 0.0000" ; }
+    if(in_surfaceStr == "Bottom"){ vnStr = "vn 0.0000 -1.0000 0.0000" ; }
+    g_out_obj1 << vnStr;
     g_out_obj1 << "s off";
     //f行：可変。Planeごとにカウントアップ必要。
     //g_out_obj1 << "f 1/1/1 2/2/1 4/3/1"; //D A B
