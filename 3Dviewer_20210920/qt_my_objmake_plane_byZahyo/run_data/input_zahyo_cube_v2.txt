@@ -1,0 +1,38 @@
+# 長方形座標4点 x1 y1 z1, x2 y2 z2 , x3, y3, z3, x4 y4 z4
+#
+# point start
+Front
+0 1 0
+0 0 0
+1 1 0
+1 0 0
+# point start
+Back
+0 1 -1
+0 0 -1
+1 1 -1
+1 0 -1
+# point start
+Right
+1 1 0
+1 0 0
+1 1 -1
+1 0 -1
+# point start
+Left
+0 1 0
+0 0 0
+0 1 -1
+0 0 -1
+# point start
+Top
+0 1 0
+1 1 0
+0 1 -1
+1 1 -1
+# point start
+Bottom
+0 0 0
+1 0 0
+0 0 -1
+1 0 -1
