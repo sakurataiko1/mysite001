@@ -45,9 +45,6 @@
 class miWidget : public QOpenGLWidget, public QOpenGLFunctions
 {
 
-
-
-
 public:
     //explicit miwidget(QWidget *parent = nullptr);
     explicit miWidget(QWidget *parent = 0);
@@ -255,7 +252,8 @@ public slots:
     void checkMateNumOfAdjoinMesh();
 
     //QVector<GLfloat> func_get_voxGraffic(QString in_voxfilepath, QString mode); //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
-    QVector<QVector3D> func_get_voxGraffic(QString in_voxfilepath, QString mode); //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
+    //QVector<QVector3D> func_get_voxGraffic(QString in_voxfilepath, QString mode); //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
+    std::tuple<QVector<QVector3D>, QVector<QVector3D>> func_get_voxGraffic(QString in_voxfilepath, QString mode);
     void func_getPointOfMesh_new(int i, int j, int k, int surfaceNo, int input_MateNo, int surfaceCnt); //kuroda　もとのgetPointOfMesh 関数から変更 //2021.06.xx-01 objファイル書き出しのため引数追加surfaceCnt
     void func_writeObjfile(); //2021.06.xx-01 objファイル作成
     QTextStream g_out_obj;

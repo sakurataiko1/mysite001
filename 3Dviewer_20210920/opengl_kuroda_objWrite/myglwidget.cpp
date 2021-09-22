@@ -5,6 +5,7 @@
 
 #include "myglwidget.h"
 
+#include <QDateTime>
 
 MyGLWidget::MyGLWidget(QWidget *parent)
     : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
@@ -201,18 +202,19 @@ void MyGLWidget::resizeGL(int width, int height)
 void MyGLWidget::paintGL()
 {
     //-start- kuroda
-    if(g_paintExeFlag == 0){ return; } //kuroda-2021.05.xx
+    if(g_paintExeFlag == 0){ return; } //kuroda-2021.05.xx プログラム起動時点など描画しない場合
     if(! QFile::exists(g_voxfilepath)){
         //QMessageBox::information(this, "notice", "Error Nofile voxpath=" + g_voxfilepath);
         qDebug() << "[DEBUG]Error Nofile voxpath=" << g_voxfilepath;
         return;
     }
 
-    miWidget *m_miWidget = new miWidget;
+    //2021.05.25 vertices取得は func_load_voxfileの時だけに変更する　ここから削除　（そうでないとマウス操作の度に描画してしまう。
+    //miWidget *m_miWidget = new miWidget;
     //[DEBUG]vertices = m_miWidget->func_get_voxGraffic("C:/kuroda/work/00_Data_vox/test_mini_vox.txt" , "vertex");
     //[DEBUG]colors   = m_miWidget->func_get_voxGraffic("C:/kuroda/work/00_Data_vox/test_mini_vox.txt" , "color");
-    vertices = m_miWidget->func_get_voxGraffic(g_voxfilepath , "vertex");
-    colors   = m_miWidget->func_get_voxGraffic(g_voxfilepath , "color");
+    //vertices = m_miWidget->func_get_voxGraffic(g_voxfilepath , "vertex");
+    //colors   = m_miWidget->func_get_voxGraffic(g_voxfilepath , "color");
     //帰り値を一度に取得   //std::tie(vertices, colors) = m_miWidget->func_get_voxGraffic(g_voxfilepath, gval_MainWindow_uiTableListMat, "vertex");
     //qDebug() << "MyGLWidget.cpp-initializeGL vertices=" << vertices;
     //qDebug() << "MyGLWidget.cpp-initializeGL colors=" << colors;
@@ -342,6 +344,12 @@ void MyGLWidget::func_load_voxfile(QString in_voxfilepath) //ユーザーGUI操�
     beta = -25;
     distance = 2.5;
 
-    updateGL(); //updateで描画開始　→ inializeGL →　paintGL
+    //vox座標読み込み　→ GL表示用座標作成　→ .objファイル作成　→ XYZ座標ファイル作成
+    miWidget *m_miWidget = new miWidget;
+    std::tie(vertices, colors) = m_miWidget->func_get_voxGraffic(g_voxfilepath , "vertex");
 
+    //openGL表示
+    qDebug() << "[DEBUG]-start- updateGL() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    updateGL(); //updateで描画開始　→ inializeGL →　paintGL
+    qDebug() << "[DEBUG]-end- updateGL() " + QDateTime::currentDateTime().toString("hh:mm:ss");
 }

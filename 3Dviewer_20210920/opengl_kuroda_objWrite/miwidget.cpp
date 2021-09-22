@@ -20,9 +20,12 @@
 //for Japanese
 #include <QTextCodec>
 
-#define NA(i,j,k) (i)*ny*nz+(j)*nz+(k)
 
 #include <QString> //2021.06.xx-01
+#include <tuple>
+
+#define NA(i,j,k) (i)*ny*nz+(j)*nz+(k)
+
 
 miWidget::miWidget(QWidget *parent)
     :QOpenGLWidget(parent)
@@ -885,69 +888,7 @@ void miWidget::readTextFileLine(QString fileName)
 }
 
 //QVector<GLfloat> miWidget::func_get_voxGraffic(QString in_voxfilepath, QString mode) //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
-QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QString mode)  //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
-{
-    g_DrawMeshXYZList.clear(); //[DEBUG]用途
-    dragFilePathList.clear();
-    dragFilePathList << in_voxfilepath;
-    voxfilePath = in_voxfilepath;
-
-    //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    mMatrix = QMatrix4x4();
-    mMatrix.setToIdentity();
-
-    DrawMesh.clear();
-    DrawSurface.clear();
-    mateNoList.clear();
-    mateNoOfMesh.clear();
-
-    vertexList.clear();
-    colorList.clear();
-    normalList.clear();
-
-    g_verticesVector.clear();
-    g_colorsVector.clear();
-
-    //m_program->disableAttributeArray(m_vertexLocation);
-    //m_program->disableAttributeArray(m_colorLocation);
-    //m_program->disableAttributeArray(m_normalLocation);
-    //
-    //m_program->release();
-
-    //各メッシュの材質No. を取得
-    getMateNumOfMesh();
-    QList<int> tmpQList;
-    for(int i=0; i<mateNoOfMesh.size(); i++ ){ tmpQList << mateNoOfMesh[i]; } //[DEBUG]kuroda qDebug表示のため、QListに代入する。
-    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
-
-    //描画するメッシュの面情報を取得
-    checkMateNumOfAdjoinMesh();
-    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawMesh=" << DrawMesh;
-    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawSurface=" << DrawSurface;
-
-    //paintGL実行フラグ有効
-    paintExeFlag = 1;
-
-    grafficSurface(); //voxから shaderで描くための図形取得　vertexList, colorList (normalListも？？）
-
-    //qDebug() << "[DEBUG]02 miwidget.cpp-func_get_voxGraffic  g_verticesVector=" << g_verticesVector;
-    //qDebug() << "[DEBUG]02func_get_voxGraffic.cpp g_colorsVector=" << cg_colorsVector;
-
-    QString WriteFilePath =  QFileInfo(voxfilePath).absolutePath() + "/log_DrawMeshXYZList.txt";
-    QString WriteFileMode = "WriteOnly";
-    //qDebug() << "[DEBUG] miWidget.cpp-func_get_voxGraffic write-log-DrawMeshXYZList path=" << WriteFilePath;
-    fileWrteForWindows(WriteFilePath, WriteFileMode, g_DrawMeshXYZList);
-
-    if(mode == "color"){
-        return g_colorsVector; //QVector<GLfloat> colorList;
-    } else {
-        return g_verticesVector;   //QVector<GLfloat> vertexList;
-    }
-
-}
-
-//vertices と colors をまとめて返値する　→ tuple を使う　2021.06.xx-01
-//std::tuple<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QString mode)  //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
+//QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QString mode)  //[DEBU]kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
 //{
 //    g_DrawMeshXYZList.clear(); //[DEBUG]用途
 //    dragFilePathList.clear();
@@ -980,12 +921,12 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
 //    getMateNumOfMesh();
 //    QList<int> tmpQList;
 //    for(int i=0; i<mateNoOfMesh.size(); i++ ){ tmpQList << mateNoOfMesh[i]; } //[DEBUG]kuroda qDebug表示のため、QListに代入する。
-//    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
+//    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
 
 //    //描画するメッシュの面情報を取得
 //    checkMateNumOfAdjoinMesh();
-//    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawMesh=" << DrawMesh;
-//    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawSurface=" << DrawSurface;
+//    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawMesh=" << DrawMesh;
+//    qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawSurface=" << DrawSurface;
 
 //    //paintGL実行フラグ有効
 //    paintExeFlag = 1;
@@ -994,6 +935,75 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
 
 //    //qDebug() << "[DEBUG]02 miwidget.cpp-func_get_voxGraffic  g_verticesVector=" << g_verticesVector;
 //    //qDebug() << "[DEBUG]02func_get_voxGraffic.cpp g_colorsVector=" << cg_colorsVector;
+
+//    QString WriteFilePath =  QFileInfo(voxfilePath).absolutePath() + "/log_DrawMeshXYZList.txt";
+//    QString WriteFileMode = "WriteOnly";
+//    //qDebug() << "[DEBUG] miWidget.cpp-func_get_voxGraffic write-log-DrawMeshXYZList path=" << WriteFilePath;
+//    fileWrteForWindows(WriteFilePath, WriteFileMode, g_DrawMeshXYZList);
+
+//    if(mode == "color"){
+//        return g_colorsVector; //QVector<GLfloat> colorList;
+//    } else {
+//        return g_verticesVector;   //QVector<GLfloat> vertexList;
+//    }
+
+//}
+
+//vertices と colors をまとめて返値する　→ tuple を使う　2021.06.xx-01
+std::tuple<QVector<QVector3D>, QVector<QVector3D>> miWidget::func_get_voxGraffic(QString in_voxfilepath, QString mode)  //kuroda　shaderで描くための座標・色設定情報を関数呼び出し先にリターンする
+{
+    g_DrawMeshXYZList.clear(); //[DEBUG]用途
+    dragFilePathList.clear();
+    dragFilePathList << in_voxfilepath;
+    voxfilePath = in_voxfilepath;
+
+    //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    mMatrix = QMatrix4x4();
+    mMatrix.setToIdentity();
+
+    DrawMesh.clear();
+    DrawSurface.clear();
+    mateNoList.clear();
+    mateNoOfMesh.clear();
+
+    vertexList.clear();
+    colorList.clear();
+    normalList.clear();
+
+    g_verticesVector.clear();
+    g_colorsVector.clear();
+
+    //m_program->disableAttributeArray(m_vertexLocation);
+    //m_program->disableAttributeArray(m_colorLocation);
+    //m_program->disableAttributeArray(m_normalLocation);
+    //
+    //m_program->release();
+
+    //各メッシュの材質No. を取得
+    qDebug() << "[DEBUG]-start- getMateNumOfMesh() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    getMateNumOfMesh();
+    qDebug() << "[DEBUG]-end- getMateNumOfMesh() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    //QList<int> tmpQList;
+    //for(int i=0; i<mateNoOfMesh.size(); i++ ){ tmpQList << mateNoOfMesh[i]; } //[DEBUG]kuroda qDebug表示のため、QListに代入する。
+    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic  mateNoOfMesh size=" << QString::number(mateNoOfMesh.size()) << ""  << tmpQList;
+
+    //描画するメッシュの面情報を取得
+    qDebug() << "[DEBUG]-start- checkMateNumOfAdjoinMesh() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    checkMateNumOfAdjoinMesh();
+    qDebug() << "[DEBUG]-end- checkMateNumOfAdjoinMesh() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawMesh=" << DrawMesh;
+    //qDebug() << "[DEBUG]01 miwidget.cpp-func_get_voxGraffic DrawSurface=" << DrawSurface;
+
+    //paintGL実行フラグ有効
+    paintExeFlag = 1;
+
+    //voxから shaderで描くための図形取得
+    qDebug() << "[DEBUG]-start- grafficSurface() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+    grafficSurface(); //voxから shaderで描くための図形取得　vertexList, colorList (normalListも？？）
+    qDebug() << "[DEBUG]-end- grafficSurface() " + QDateTime::currentDateTime().toString("hh:mm:ss");
+
+    //qDebug() << "[DEBUG]02 miwidget.cpp-func_get_voxGraffic  g_verticesVector=" << g_verticesVector;
+    //qDebug() << "[DEBUG]02func_get_voxGraffic.cpp g_colorsVector=" << cg_colorsVector;
 
 //    QString WriteFilePath =  QFileInfo(voxfilePath).absolutePath() + "/log_DrawMeshXYZList.txt";
 //    QString WriteFileMode = "WriteOnly";
@@ -1006,10 +1016,10 @@ QVector<QVector3D>  miWidget::func_get_voxGraffic(QString in_voxfilepath, QStrin
 //        return g_verticesVector;   //QVector<GLfloat> vertexList;
 //    }
 
-//      //2021.06.xx-01
-//      return std::forward_as_tuple(g_verticesVector, g_colorsVector);
+      //2021.06.xx-01
+      return std::forward_as_tuple(g_verticesVector, g_colorsVector);
 
-//}
+}
 
 
 
