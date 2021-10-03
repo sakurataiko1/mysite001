@@ -22,6 +22,7 @@ in vec3 color;
 varying vec4 varying_myColor;
 in vec2 acolor; //透明度をマテリアルごとに変更したい場合用　未実装
 uniform float acolorOne; //全形状　指定された透明度にする
+uniform int flag_acolor; //全形状　半透明にする（１） or　しない(0 : 通常表示)
 //-end- kuroda
 
 void main()
@@ -45,9 +46,18 @@ void main()
 
     //-start- kuroda 半透明設定したつもりだが、反映されない
     vec3 prelightIntensity = lightLd * max( dot(s, tnorm), 0.0) * color; //lightKdだけ除外する ( lightKdはGUIフォームで設定されているだけなので　） //1.0 は透明度 0.0～1.0の値を指定する。 数値が小さいほど透明。
-    //varying_myColor = vec4(prelightIntensity, 1.0 );     //全部、通常表示する。（半透明透明なし）
-    varying_myColor = vec4(prelightIntensity, 0.3 );     //全部、半透明にする。
-    //varying_myColor = vec4(prelightIntensity, acolorOne ); //全部、半透明(指定透明度）にする。
+
     //varying_myColor = vec4(prelightIntensity, acolor); //面ごとに透明・半透明違えて描画したかったが、意図通り表示されない。。　これから書き方考える
+    //
+    //varying_myColor = vec4(prelightIntensity, 1.0 );     //全部、通常表示する。（半透明なし）
+    varying_myColor = vec4(prelightIntensity, acolorOne ); //全部、半透明(指定透明度 = 0.3など）にする。
+    //
+    //-start- OK　フラグflag_acolorを受け取って、半透明あり、なしを決める
+    //varying_myColor = vec4(prelightIntensity, 1.0 ); //全部、通常表示する。（半透明透明なし）
+    //if(flag_acolor == 1 ){
+    //    varying_myColor = vec4(prelightIntensity, 0.3 ); //全部、半透明(指定透明度）にする。
+    //}
+    //-end- flag_acolorの場合
+
     //-end- kuroda
 }

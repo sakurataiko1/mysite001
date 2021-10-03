@@ -39,7 +39,7 @@ void QObj3dViewer::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    //-start- org
+    //-start- org DEBUGビルド用の記述 Q_ASSERTが必要
 //    Q_ASSERT(openglProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,
 //                                                   ":/vert-shader.vsh"));
 
@@ -50,7 +50,7 @@ void QObj3dViewer::initializeGL()
 //    Q_ASSERT(openglProgram.bind());
     //-end- org
 
-    //-start- for-vox Release-build
+    //-start- for-vox Releaseビルド用の記述 Q_ASSERTは必ず除外　(そうしないと起動前に落ちる）
     openglProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/vert-shader.vsh");
     openglProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/frag-shader.fsh");
     openglProgram.link();
@@ -141,7 +141,7 @@ void QObj3dViewer::paintGL()
     //-end- kuroda [DEBUG] 1平面用
 
     //-start- kuroda [DEBUG] テストデータ1平面　半透明色設定用
-    //QVector<float> acolors;
+    QVector<GLfloat> acolors;
     //for(int i=0; i<triangles.count(); i++){
     //    acolors.append(0.3); //半透明
     //  if(i < 1) {
@@ -150,14 +150,21 @@ void QObj3dViewer::paintGL()
     //      acolors.append(1.0); //通常色（透明にしない）
     //  }
     //}
-    //openglProgram.setAttributeArray("acolor", acolors.constData()); //記述ミスしていた。。 colorsでなく, acolorsが正しいが、それだと文法エラー。。これから考える
-    //openglProgram.enableAttributeArray("acolor");
+    //openglProgram.enableAttributeArray("acolo");
+    //openglProgram.setAttributeArray("acolor", acolors.constData());
     //↑半透明設定　マテリアルごといまだできずのため　↓　全部半透明のための設定
 
+    //-start- OK　フラグflag_acolorで、半透明あり、なしを決める
+    //int flag_acolor;
+    //flag_acolor = 0; //0:通常表示 1: 半透明
+    //openglProgram.setUniformValue("flag_acolor", flag_acolor);
+    //-end- OK　フラグflag_acolorで、半透明あり、なしを決める
+
+//    //-start- OK　acolorで、半透明あり、なしを決める
     float acolorOne;
     acolorOne = 0.3; //半透明
+    //acolorOne = 1.0; //透明なし
     openglProgram.setUniformValue("acolorOne", acolorOne);
-
     //-end- kuroda [DEBUG] 1平面用　半透明色設定用
 
     glDrawArrays(GL_TRIANGLES, 0, triangles.count());
