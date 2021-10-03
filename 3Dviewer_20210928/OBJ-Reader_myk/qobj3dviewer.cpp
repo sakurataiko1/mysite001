@@ -50,12 +50,12 @@ void QObj3dViewer::initializeGL()
 //    Q_ASSERT(openglProgram.bind());
     //-end- org
 
-    //-start- new
-    openglProgram.addShaderFromSourceFile(QGLShader::Vertex, ":/vert-shader.vsh");
-    openglProgram.addShaderFromSourceFile(QGLShader::Fragment, ":/frag-shader.fsh");
+    //-start- for-vox Release-build
+    openglProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,":/vert-shader.vsh");
+    openglProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,":/frag-shader.fsh");
     openglProgram.link();
-    //openglProgram.bind(); //bind は　paintGLに書く
-    //-end- new
+    openglProgram.bind();
+    //-end- for-vox
 
     perspective.aspectRatio =  height() > 0.0f ? float(width()) / float(height()) : 1.0f;
 
@@ -71,8 +71,6 @@ void QObj3dViewer::initializeGL()
 void QObj3dViewer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    openglProgram.bind(); //new OpenGLshaderクラスの場合はInitializeに書いていたが、 QGLshaderProgramに変更して位置も変更
 
     projectionMat.setToIdentity();
     projectionMat.perspective(perspective.verticalAngle, perspective.aspectRatio, perspective.nearPlane, perspective.farPlane);

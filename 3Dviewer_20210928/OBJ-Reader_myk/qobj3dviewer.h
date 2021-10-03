@@ -57,8 +57,7 @@ private:
     QVector<QVector2D> textureUV;
     QOpenGLTexture *texture;
 
-    //org//QOpenGLShaderProgram openglProgram;
-    QGLShaderProgram openglProgram;
+    QOpenGLShaderProgram openglProgram;
 
     QQuaternion modelRotation;
     QVector3D modelTranslation;
