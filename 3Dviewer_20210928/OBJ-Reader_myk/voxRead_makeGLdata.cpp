@@ -8,6 +8,11 @@ voxRead_makeGLdata::voxRead_makeGLdata(QObject *parent) : QObject(parent)
 
 void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTriangle3D_vox> &triangles, QString in_voxfilepath)
 {
+    //■ GL描画用形式への置き換え　通常図形=正方形平面(座標4点）→ GL描画用形式 = 3角形2個(座標6点)　反時計回り座標
+    //
+    //■ 通常座標 (x, y, z) のまま、設定すると　openGLでは、Y軸と、Z軸が反対に表示されてしまうため
+    //  GL座標 (x, -y, -z) として入れなおして計算する
+    //
 
     //openGLでの描画単位=1つの三角形ごとの情報作成する。
     //メモリ使用量削減するなら、この処理介さず、 qobj3dviewer.h　setTriangleで使う形式にしてしまった方がいいかもしれない。
@@ -34,12 +39,12 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
         //in_j = 1;
         //in_k = 1;
         in_i = g_voxXYZVec.at(pnum).x();
-        in_j = g_voxXYZVec.at(pnum).y();
-        in_k = g_voxXYZVec.at(pnum).z();
+        in_j = g_voxXYZVec.at(pnum).z(); //GL:Z軸　j=通常:Z軸
+        in_k = g_voxXYZVec.at(pnum).y() * (-1);  //GL:Y軸　k=通常:Y軸 * -1(反転 前がプラス, 後ろがマイナス）
         //GLfloat nowOP_x, nowOP_y , nowOP_z;
         float nowOP_x, nowOP_y , nowOP_z;
         float meshsize_x, meshsize_y, meshsize_z;
-        meshsize_x = 1;
+        meshsize_x = 1; //[DEBUG]決め打ち GL座標として
         meshsize_y = 1;
         meshsize_z = 1;
         nowOP_x = in_i * meshsize_x; //kuroda変更　-0.5 では表示が小さすぎになってしまうための対処
@@ -86,8 +91,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
         //前準備(openGL座標作成)
         QVector<QVector3D> rectVec; //Front など 1平面（四角形の4頂点をopenGL描画用の並びにした座標リスト
         rectVec.clear();
-        if(g_voxSurfaceStrList.at(pnum) == "Front"){
-            //Front
+        if(g_voxSurfaceStrList.at(pnum) == "Bottom"){ //通常座標=Bottom → GL座標=前
+            //GL図形 前
             rectVec.append(vertexA); //1つ目の三角形
             rectVec.append(vertexB);
             rectVec.append(vertexC);
@@ -95,8 +100,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
             rectVec.append(vertexD);
             rectVec.append(vertexA);
         }
-        if(g_voxSurfaceStrList.at(pnum) == "Back"){
-            //Front
+        if(g_voxSurfaceStrList.at(pnum) == "Top"){ //通常座標=Top → GL座標=後
+            //GL図形 後
             rectVec.append(vertexF); //１つ目の三角形
             rectVec.append(vertexE);
             rectVec.append(vertexH);
@@ -104,7 +109,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
             rectVec.append(vertexG);
             rectVec.append(vertexF);
         }
-        if(g_voxSurfaceStrList.at(pnum) == "Right"){ //Right
+        if(g_voxSurfaceStrList.at(pnum) == "Right"){
+            //GL平面図形 右
             rectVec.append(vertexB); //１つ目の三角形
             rectVec.append(vertexF);
             rectVec.append(vertexG);
@@ -112,7 +118,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
             rectVec.append(vertexC);
             rectVec.append(vertexB);
         }
-        if(g_voxSurfaceStrList.at(pnum) == "Left"){ //Left
+        if(g_voxSurfaceStrList.at(pnum) == "Left"){
+            //GL平面図形 左
             rectVec.append(vertexE); //１つ目の三角形
             rectVec.append(vertexA);
             rectVec.append(vertexD);
@@ -120,7 +127,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
             rectVec.append(vertexH);
             rectVec.append(vertexE);
         }
-        if(g_voxSurfaceStrList.at(pnum) == "Top"){ //Top
+        if(g_voxSurfaceStrList.at(pnum) == "Front"){ //通常座標=Front → GL座標=上
+            //GL平面図形 上
             rectVec.append(vertexD); //１つ目の三角形
             rectVec.append(vertexC);
             rectVec.append(vertexG);
@@ -128,7 +136,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
             rectVec.append(vertexH);
             rectVec.append(vertexD);
         }
-        if(g_voxSurfaceStrList.at(pnum) == "Bottom"){ //Bottom
+        if(g_voxSurfaceStrList.at(pnum) == "Back"){ //通常座標=Back → GL座標=下
+            //GL平面図形 下
             rectVec.append(vertexE); //１つ目の三角形
             rectVec.append(vertexF);
             rectVec.append(vertexB);
@@ -146,20 +155,20 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
         //    if(in_surfaceStr == "Bottom"){ vnStr = "vn 0.0000 -1.0000 0.0000" ; }
         QVector3D vn_now;
         vn_now = QVector3D(0, 0, 1);
-        if(g_voxSurfaceStrList.at(pnum) == "Front"){ vn_now = QVector3D(0, 0, 1);  }
-        if(g_voxSurfaceStrList.at(pnum) == "Back"){  vn_now = QVector3D(0, 0, -1); }
-        if(g_voxSurfaceStrList.at(pnum) == "Right"){ vn_now = QVector3D(1, 0, 0);  }
-        if(g_voxSurfaceStrList.at(pnum) == "Left"){  vn_now = QVector3D(-1, 0, 0); }
-        if(g_voxSurfaceStrList.at(pnum) == "Top"){   vn_now = QVector3D(0, 1, 0);  }
-        if(g_voxSurfaceStrList.at(pnum) == "Bottom"){vn_now = QVector3D(0, -1, 0); }
+        if(g_voxSurfaceStrList.at(pnum) == "Bottom"){ vn_now = QVector3D(0, 0, 1);  }
+        if(g_voxSurfaceStrList.at(pnum) == "Top"){    vn_now = QVector3D(0, 0, -1); }
+        if(g_voxSurfaceStrList.at(pnum) == "Right"){  vn_now = QVector3D(1, 0, 0);  }
+        if(g_voxSurfaceStrList.at(pnum) == "Left"){   vn_now = QVector3D(-1, 0, 0); }
+        if(g_voxSurfaceStrList.at(pnum) == "Front"){  vn_now = QVector3D(0, 1, 0);  }
+        if(g_voxSurfaceStrList.at(pnum) == "Back"){   vn_now = QVector3D(0, -1, 0); }
 
-        for(int shapeCnt=1; shapeCnt<=2; shapeCnt++ ){
+        for(int shapeCnt=1; shapeCnt<=2; shapeCnt++ ){ //1平面 = 2つの三角形
             //if(shapeCnt == 1){
 
             QOpenGLTriangle3D_vox triangle;
 
             //色設定
-            g_GLColors.append(g_voxColors.at(pnum));
+            //g_GLColors.append(g_voxColors.at(pnum));
             triangle.color = g_voxColors.at(pnum);
 
             // 1平面(四角形)-1つ目の三角形 頂点情報 (objファイルのvt)
@@ -215,6 +224,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
     qDebug() << "[DEBUG]voxRead_makeGLdata.cpp-func_01main_GL_make: end makeGLinfo " +  QDateTime::currentDateTime().toString("hh:mm:ss");
 
 }
+
+
 
 void voxRead_makeGLdata::zDEBUG_vox_get_voxGraffic_DEBUG01(QString in_voxfilepath) //voxファイルから、座標とマテリアル情報を取得する　1点ごと
 {

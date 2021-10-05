@@ -90,7 +90,7 @@ public:
     QVector<QVector3D> g_voxXYZVec;
     QVector<QVector3D> g_voxColors;
     QStringList g_voxSurfaceStrList;
-    QVector<QVector3D> g_GLColors;
+    //QVector<QVector3D> g_GLColors;
 
     QVector3D func_GL_defineColor(int input_num); //
 
