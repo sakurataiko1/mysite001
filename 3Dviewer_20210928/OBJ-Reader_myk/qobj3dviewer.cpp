@@ -254,18 +254,17 @@ void QObj3dViewer::mouseReleaseEvent(QMouseEvent *event)
 void QObj3dViewer::wheelEvent(QWheelEvent *event)
 {
     int delta = event->delta();
-    qDebug() << Q_FUNC_INFO << "[DEBUG]MouseWheel zooin/out delta=" + QString::number(delta);
 
     if (event->orientation() == Qt::Vertical) {
         if (delta < 0) {
-            //distance *= 1.1;
-            lookAt.up = lookAt.up * 1.1;
+            modelScale = modelScale * 1.1;
+            //GUIフォーム Transformタブ-scale も更新すべきだが、未対応。これから。
         } else if (delta > 0) {
-            //distance *= 0.9;
-            lookAt.up = lookAt.up * 0.9;
+            modelScale = modelScale * 0.9;
+            //GUIフォーム Transformタブ-scale も更新すべきだが、未対応。これから。
         }
 
-        //updateGL();
+        //qDebug() << QString("[DEBUG]01 QObj3dViewer.cpp-wheelEvent After modelScale=%1").arg(QString::number(modelScale));
         update();
     }
 
