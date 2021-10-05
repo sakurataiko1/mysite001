@@ -59,6 +59,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="checkBox_acolor">
+            <property name="text">
+             <string>半透明</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="label">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">

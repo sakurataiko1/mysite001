@@ -313,6 +313,10 @@ void MainWindow::on_DEBUG01_pushButton_clicked() //kuroda
     {
         voxRead_makeGLdata().func_01main_GL_make_getPointOfMesh(triangles, voxfilepath);
 
+        int flag_acolor = 0;
+        if(ui->checkBox_acolor->isChecked()){ flag_acolor = 1; }
+        ui->obj3dViewer->g_ui_acolorflag = flag_acolor;
+
         qDebug() << "[DEBUG]MainWindow.cpp-on_DEBUG01_pushButton_clicked(): start openGL-draw-setTriangle " +  QDateTime::currentDateTime().toString("hh:mm:ss");
         ui->obj3dViewer->DEBUG01_setTriangles(triangles);
         qDebug() << "[DEBUG]MainWindow.cpp-on_DEBUG01_pushButton_clicked(): end openGL-draw-setTriangle " +  QDateTime::currentDateTime().toString("hh:mm:ss");

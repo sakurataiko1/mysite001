@@ -29,6 +29,8 @@ public:
     void DEBUG01_setTriangles(QVector<QOpenGLTriangle3D_vox> &_triangles);
     QVector<QVector3D> g_GLColors;
 
+    int g_ui_acolorflag; //GUIの半透明設定
+
 public slots:
     void setRotation(float angle, float x, float y, float z);
     void setTranslation(float x, float y, float z);
@@ -46,7 +48,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-
+    void wheelEvent(QWheelEvent *event); //for-vox  マウスホイールでズームイン・ズームアウト
 signals:
 
 public slots:

@@ -4,6 +4,8 @@
 QObj3dViewer::QObj3dViewer(QWidget *parent) : QOpenGLWidget(parent)
 {
     texture = Q_NULLPTR;
+
+    g_ui_acolorflag = 1; //1:半透明 0:通常表示
 }
 
 QObj3dViewer::~QObj3dViewer()
@@ -163,7 +165,11 @@ void QObj3dViewer::paintGL()
 //    //-start- OK　acolorで、半透明あり、なしを決める
     float acolorOne;
     acolorOne = 0.3; //半透明
-    //acolorOne = 1.0; //透明なし
+    if(g_ui_acolorflag == 1){
+        acolorOne = 0.3; //半透明
+    } else {
+        acolorOne = 1.0; //透明なし
+    }
     openglProgram.setUniformValue("acolorOne", acolorOne);
     //-end- kuroda [DEBUG] 1平面用　半透明色設定用
 
@@ -243,6 +249,29 @@ void QObj3dViewer::mouseReleaseEvent(QMouseEvent *event)
     Q_UNUSED(event);
     qDebug() << Q_FUNC_INFO << "Not implemented yet!";
 }
+
+//-start- for-vox マウスホイールでズームイン・ズームアウト まだ動作できてない。。これから調べる。。
+void QObj3dViewer::wheelEvent(QWheelEvent *event)
+{
+    int delta = event->delta();
+    qDebug() << Q_FUNC_INFO << "[DEBUG]MouseWheel zooin/out delta=" + QString::number(delta);
+
+    if (event->orientation() == Qt::Vertical) {
+        if (delta < 0) {
+            //distance *= 1.1;
+            lookAt.up = lookAt.up * 1.1;
+        } else if (delta > 0) {
+            //distance *= 0.9;
+            lookAt.up = lookAt.up * 0.9;
+        }
+
+        //updateGL();
+        update();
+    }
+
+    event->accept();
+}
+//-start- for-vox
 
 void QObj3dViewer::DEBUG01_setTriangles(QVector<QOpenGLTriangle3D_vox> &_triangles)
 {
