@@ -8,11 +8,6 @@ voxRead_makeGLdata::voxRead_makeGLdata(QObject *parent) : QObject(parent)
 
 void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTriangle3D_vox> &triangles, QString in_voxfilepath)
 {
-    //■ GL描画用形式への置き換え　通常図形=正方形平面(座標4点）→ GL描画用形式 = 3角形2個(座標6点)　反時計回り座標
-    //
-    //■ 通常座標 (x, y, z) のまま、設定すると　openGLでは、Y軸と、Z軸が反対に表示されてしまうため
-    //  GL座標 (x, -y, -z) として入れなおして計算する
-    //
 
     //openGLでの描画単位=1つの三角形ごとの情報作成する。
     //メモリ使用量削減するなら、この処理介さず、 qobj3dviewer.h　setTriangleで使う形式にしてしまった方がいいかもしれない。
@@ -39,8 +34,8 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
         //in_j = 1;
         //in_k = 1;
         in_i = g_voxXYZVec.at(pnum).x();
-        in_j = g_voxXYZVec.at(pnum).z(); //GL:Z軸　j=通常:Z軸
-        in_k = g_voxXYZVec.at(pnum).y() * (-1);  //GL:Y軸　k=通常:Y軸 * -1(反転 前がプラス, 後ろがマイナス）
+        in_j = g_voxXYZVec.at(pnum).y();
+        in_k = g_voxXYZVec.at(pnum).z();
         //GLfloat nowOP_x, nowOP_y , nowOP_z;
         float nowOP_x, nowOP_y , nowOP_z;
         float meshsize_x, meshsize_y, meshsize_z;
@@ -220,8 +215,6 @@ void voxRead_makeGLdata::func_01main_GL_make_getPointOfMesh(QVector<QOpenGLTrian
     qDebug() << "[DEBUG]voxRead_makeGLdata.cpp-func_01main_GL_make: end makeGLinfo " +  QDateTime::currentDateTime().toString("hh:mm:ss");
 
 }
-
-
 
 void voxRead_makeGLdata::zDEBUG_vox_get_voxGraffic_DEBUG01(QString in_voxfilepath) //voxファイルから、座標とマテリアル情報を取得する　1点ごと
 {
