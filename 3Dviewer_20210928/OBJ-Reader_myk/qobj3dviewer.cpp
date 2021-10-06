@@ -5,7 +5,10 @@ QObj3dViewer::QObj3dViewer(QWidget *parent) : QOpenGLWidget(parent)
 {
     texture = Q_NULLPTR;
 
-    g_ui_acolorflag = 1; //1:半透明 0:通常表示
+    g_ui_acolorflag = 1; //for-vox 1:半透明 0:通常表示
+    g_flag_mouseMoveLeftButton = 0; //for-vox マウスドラッグ図形回転
+    alpha = 25; //for-vox マウスドラッグ図形回転 GL座標:Y軸の角度 （=通常座標:Z軸の角度)
+    beta = -25; //for-vox マウスドラッグ図形回転 GL座標:X軸の角度
 }
 
 QObj3dViewer::~QObj3dViewer()
@@ -83,6 +86,11 @@ void QObj3dViewer::paintGL()
     modelMat.setToIdentity();
     modelMat.scale(modelScale);
     modelMat.rotate(modelRotation);
+    if(g_flag_mouseMoveLeftButton == 1 ){
+        modelMat.rotate(alpha, 0, 1, 0);
+        modelMat.rotate(beta, 1, 0, 0);
+        g_flag_mouseMoveLeftButton = 0;
+    }
     modelMat.translate(modelTranslation);
 
     openglProgram.enableAttributeArray("vertexPosition");
@@ -234,14 +242,50 @@ void QObj3dViewer::mouseDoubleClickEvent(QMouseEvent *event)
 
 void QObj3dViewer::mouseMoveEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
-    qDebug() << Q_FUNC_INFO << "Not implemented yet!";
+    //-start- org
+    //Q_UNUSED(event);
+    //qDebug() << Q_FUNC_INFO << "Not implemented yet!";
+    //-end- org
+
+    int deltaX = event->x() - lastMousePosition.x();
+    int deltaY = event->y() - lastMousePosition.y();
+    if (event->buttons() & Qt::LeftButton) { //マウスドラッグ　(=左ボタン押しながらMouseMove)
+        alpha -= deltaX;
+        while (alpha < 0) {
+            alpha += 360;
+        }
+        while (alpha >= 360) {
+            alpha -= 360;
+        }
+
+        beta -= deltaY;
+        if (beta < -90) {
+            beta = -90;
+        }
+        if (beta > 90) {
+            beta = 90;
+        }
+        //qDebug() << QString("QObj3dViewer.cpp-mouseReleaseEvent after alpha=%1, beta=%2").arg(QString::number(alpha),QString::number(beta) );
+        g_flag_mouseMoveLeftButton = 1;
+        update();
+    }
+
+
 }
 
 void QObj3dViewer::mousePressEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
-    qDebug() << Q_FUNC_INFO << "Not implemented yet!";
+    //-org- start
+//    Q_UNUSED(event);
+//    qDebug() << Q_FUNC_INFO << "Not implemented yet!";
+    //-org- end
+
+    //for-vox change
+    lastMousePosition = event->pos();
+    event->accept();
+
+    //qDebug() << QString("[DEBUG]01 QObj3dViewer.cpp-wheelEvent After lastMousePosition　x=%1 y=%2").arg(QString::number(lastMousePosition.x()), QString::number(lastMousePosition.y()));
+
 }
 
 void QObj3dViewer::mouseReleaseEvent(QMouseEvent *event)
@@ -253,7 +297,7 @@ void QObj3dViewer::mouseReleaseEvent(QMouseEvent *event)
 //-start- for-vox マウスホイールでズームイン・ズームアウト まだ動作できてない。。これから調べる。。
 void QObj3dViewer::wheelEvent(QWheelEvent *event)
 {
-    int delta = event->delta();
+    int delta = event->delta(); //マウスホイールが、どちらの方向に、どれだけの量動かされたかを取得。
 
     if (event->orientation() == Qt::Vertical) {
         if (delta < 0) {

@@ -85,7 +85,11 @@ private:
     QVector3D lightKd;
     QVector3D lightLd;
 
-    QPoint lastMousePos;
+    QPoint lastMousePos; //org 使わなければ後で消す
+    QPoint lastMousePosition; //for-vox　opengl_myk-myglwidget.hから流用 マウス回転用
+    double alpha; //マウス回転用 GL座標:Y軸の角度 （=通常座標:Z軸の角度)
+    double beta; //マウス回転用  X軸の回転角度
+    int g_flag_mouseMoveLeftButton; //マウス回転用
 
 };
 
