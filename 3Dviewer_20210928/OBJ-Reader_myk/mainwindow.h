@@ -101,6 +101,8 @@ private slots:
 
     void on_DEBUG01_pushButton_clicked();
 
+    void on_checkBox_acolor_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 

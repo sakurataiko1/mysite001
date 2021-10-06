@@ -313,10 +313,12 @@ void MainWindow::on_DEBUG01_pushButton_clicked() //kuroda
     {
         voxRead_makeGLdata().func_01main_GL_make_getPointOfMesh(triangles, voxfilepath);
 
+        // 半透明ON/OFF設定 (全図形 半透明にする)
         int flag_acolor = 0;
         if(ui->checkBox_acolor->isChecked()){ flag_acolor = 1; }
         ui->obj3dViewer->g_ui_acolorflag = flag_acolor;
 
+        //voxファイルからの情報を渡して、openGL描画する
         qDebug() << "[DEBUG]MainWindow.cpp-on_DEBUG01_pushButton_clicked(): start openGL-draw-setTriangle " +  QDateTime::currentDateTime().toString("hh:mm:ss");
         ui->obj3dViewer->DEBUG01_setTriangles(triangles);
         qDebug() << "[DEBUG]MainWindow.cpp-on_DEBUG01_pushButton_clicked(): end openGL-draw-setTriangle " +  QDateTime::currentDateTime().toString("hh:mm:ss");
@@ -325,3 +327,15 @@ void MainWindow::on_DEBUG01_pushButton_clicked() //kuroda
     }
 
 }
+
+void MainWindow::on_checkBox_acolor_stateChanged(int arg1)
+{
+    //for vox
+    // 半透明ON/OFF設定 (全図形 半透明にする)
+    int flag_acolor = 0;
+    if(ui->checkBox_acolor->isChecked()){ flag_acolor = 1; }
+    ui->obj3dViewer->g_ui_acolorflag = flag_acolor;
+
+    updateEverything(); //openGL widget更新
+}
+

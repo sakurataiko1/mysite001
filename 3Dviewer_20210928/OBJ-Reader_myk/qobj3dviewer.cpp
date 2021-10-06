@@ -151,7 +151,7 @@ void QObj3dViewer::paintGL()
     //-end- kuroda [DEBUG] 1平面用
 
     //-start- kuroda [DEBUG] テストデータ1平面　半透明色設定用
-    QVector<GLfloat> acolors;
+    //QVector<GLfloat> acolors;
     //for(int i=0; i<triangles.count(); i++){
     //    acolors.append(0.3); //半透明
     //  if(i < 1) {
